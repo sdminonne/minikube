@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minikube-capi-provider-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minikube-capi-provider-controller-manager
+  namespace: minikube-capi-provider-system
+  labels:
+    control-plane: controller-manager
+spec:
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      serviceAccountName: minikube-capi-provider-controller-manager
+      containers:
+      - name: manager
+        image: minikube-capi-provider:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - /minikube-capi-provider
+        args:
+        - --leader-elect
+        - --metrics-bind-address=:8080
+        - --health-probe-bind-address=:8081
+        - --storage-path=/var/lib/minikube
+        - --profile=minikube
+        ports:
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
+        - containerPort: 8081
+          name: health
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: health
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: health
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: minikube-storage
+          mountPath: /var/lib/minikube
+          readOnly: true
+        - name: minikube-home
+          mountPath: /root/.minikube
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 65532
+          seccompProfile:
+            type: RuntimeDefault
+      volumes:
+      # Mount the host's minikube storage directory
+      - name: minikube-storage
+        hostPath:
+          path: /var/lib/minikube
+          type: DirectoryOrCreate
+      # Mount the host's minikube home directory
+      - name: minikube-home
+        hostPath:
+          path: /home/docker/.minikube
+          type: DirectoryOrCreate
+      terminationGracePeriodSeconds: 10

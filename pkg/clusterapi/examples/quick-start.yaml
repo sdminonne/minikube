@@ -1,0 +1,91 @@
+# Quick Start Example: Add a single worker node to your minikube cluster
+#
+# Prerequisites:
+# 1. minikube cluster running
+# 2. Cluster API core components installed (clusterctl init)
+# 3. Minikube CAPI provider installed
+#
+# Usage:
+#   kubectl apply -f quick-start.yaml
+
+---
+# Cluster resource - represents the Kubernetes cluster
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: minikube-cluster
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 10.244.0.0/16
+    services:
+      cidrBlocks:
+      - 10.96.0.0/12
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    kind: MinikubeCluster
+    name: minikube-cluster
+
+---
+# MinikubeCluster - infrastructure provider specific cluster resource
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: MinikubeCluster
+metadata:
+  name: minikube-cluster
+  namespace: default
+spec:
+  # The minikube profile name (default: "minikube")
+  profileName: minikube
+
+  # Driver used by minikube (docker, kvm2, hyperkit, etc.)
+  driver: docker
+
+  # Container runtime (docker, containerd, crio)
+  containerRuntime: containerd
+
+---
+# Machine - represents a single node
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Machine
+metadata:
+  name: minikube-worker-1
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: minikube-cluster
+    node-role.kubernetes.io/worker: ""
+spec:
+  clusterName: minikube-cluster
+
+  # Kubernetes version for this node
+  version: v1.28.0
+
+  # Infrastructure reference
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    kind: MinikubeMachine
+    name: minikube-worker-1
+
+---
+# MinikubeMachine - infrastructure provider specific machine resource
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: MinikubeMachine
+metadata:
+  name: minikube-worker-1
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: minikube-cluster
+spec:
+  # Node will be automatically named (e.g., m02, m03, etc.)
+  # Or you can specify a custom name:
+  # nodeName: my-custom-node
+
+  # Mark this as a worker node
+  worker: true
+  controlPlane: false
+
+  # Resource allocation (optional)
+  cpus: 2
+  memory: 2048  # MB
+  diskSize: 20000  # MB

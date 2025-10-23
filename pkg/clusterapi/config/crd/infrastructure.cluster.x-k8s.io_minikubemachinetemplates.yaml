@@ -1,0 +1,80 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: minikubemachinetemplates.infrastructure.cluster.x-k8s.io
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.13.0
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-minikube
+    cluster.x-k8s.io/v1beta1: v1alpha1
+spec:
+  group: infrastructure.cluster.x-k8s.io
+  names:
+    categories:
+    - cluster-api
+    kind: MinikubeMachineTemplate
+    listKind: MinikubeMachineTemplateList
+    plural: minikubemachinetemplates
+    singular: minikubemachinetemplate
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: MinikubeMachineTemplate is the Schema for the minikubemachinetemplates API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object.'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents.'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: MinikubeMachineTemplateSpec defines the desired state of MinikubeMachineTemplate
+            properties:
+              template:
+                description: MinikubeMachineTemplateResource describes the data needed to create a MinikubeMachine from a template
+                properties:
+                  spec:
+                    description: Spec is the specification of the desired behavior of the machine.
+                    properties:
+                      controlPlane:
+                        description: ControlPlane indicates this is a control-plane node
+                        type: boolean
+                      cpus:
+                        description: CPUs specifies the number of CPUs for this node
+                        type: integer
+                      diskSize:
+                        description: DiskSize specifies the disk size in MB for this node
+                        type: integer
+                      extraOptions:
+                        additionalProperties:
+                          type: string
+                        description: ExtraOptions allows passing additional options to minikube
+                        type: object
+                      memory:
+                        description: Memory specifies the amount of memory in MB for this node
+                        type: integer
+                      nodeName:
+                        description: NodeName is the name of the minikube node
+                        type: string
+                      providerID:
+                        description: 'ProviderID is the unique identifier'
+                        type: string
+                      worker:
+                        description: Worker indicates this is a worker node
+                        type: boolean
+                    type: object
+                required:
+                - spec
+                type: object
+            required:
+            - template
+            type: object
+        type: object
+    served: true
+    storage: true

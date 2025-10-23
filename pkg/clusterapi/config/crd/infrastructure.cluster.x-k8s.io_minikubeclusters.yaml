@@ -1,0 +1,141 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: minikubeclusters.infrastructure.cluster.x-k8s.io
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.13.0
+  labels:
+    cluster.x-k8s.io/provider: infrastructure-minikube
+    cluster.x-k8s.io/v1beta1: v1alpha1
+spec:
+  group: infrastructure.cluster.x-k8s.io
+  names:
+    categories:
+    - cluster-api
+    kind: MinikubeCluster
+    listKind: MinikubeClusterList
+    plural: minikubeclusters
+    singular: minikubecluster
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: MinikubeCluster is the Schema for the minikubeclusters API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values.'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to.'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: MinikubeClusterSpec defines the desired state of MinikubeCluster
+            properties:
+              containerRuntime:
+                description: ContainerRuntime specifies the container runtime (docker,
+                  containerd, crio)
+                type: string
+              controlPlaneEndpoint:
+                description: ControlPlaneEndpoint represents the endpoint used to
+                  communicate with the control plane.
+                properties:
+                  host:
+                    description: The hostname on which the API server is serving.
+                    type: string
+                  port:
+                    description: The port on which the API server is serving.
+                    format: int32
+                    type: integer
+                required:
+                - host
+                - port
+                type: object
+              driver:
+                description: Driver specifies the minikube driver to use (docker,
+                  kvm2, hyperkit, etc.) Defaults to the driver used to create the
+                  initial cluster
+                type: string
+              networkPlugin:
+                description: NetworkPlugin specifies the CNI plugin to use
+                type: string
+              profileName:
+                description: ProfileName is the minikube profile name for this cluster
+                type: string
+            type: object
+          status:
+            description: MinikubeClusterStatus defines the observed state of MinikubeCluster
+            properties:
+              conditions:
+                description: Conditions defines current service state of the MinikubeCluster.
+                items:
+                  description: Condition defines an observation of a Cluster API resource
+                    operational state.
+                  properties:
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A human readable message indicating details about
+                        the transition.
+                      type: string
+                    reason:
+                      description: The reason for the condition's last transition
+                        in CamelCase.
+                      type: string
+                    severity:
+                      description: Severity provides an explicit classification of
+                        Reason code
+                      type: string
+                    status:
+                      description: Status of the condition, one of True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type of condition in CamelCase.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - status
+                  - type
+                  type: object
+                type: array
+              failureMessage:
+                description: FailureMessage will be set in the event that there is
+                  a terminal problem reconciling the MinikubeCluster
+                type: string
+              failureReason:
+                description: FailureReason will be set in the event that there is
+                  a terminal problem reconciling the MinikubeCluster
+                type: string
+              ready:
+                description: Ready indicates the cluster infrastructure is ready
+                type: boolean
+            required:
+            - ready
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Cluster
+      type: string
+      description: Cluster to which this MinikubeCluster belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+    - name: Ready
+      type: string
+      description: Cluster infrastructure is ready
+      jsonPath: .status.ready
+    - name: Endpoint
+      type: string
+      description: Control plane endpoint
+      jsonPath: .spec.controlPlaneEndpoint.host

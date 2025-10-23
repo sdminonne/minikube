@@ -1,0 +1,93 @@
+# MachineDeployment Example: Scale worker nodes declaratively
+#
+# This example shows how to use a MachineDeployment to manage
+# a set of worker nodes that can be scaled up or down.
+#
+# Usage:
+#   kubectl apply -f machinedeployment.yaml
+#
+# Scale up:
+#   kubectl scale machinedeployment minikube-workers --replicas=5
+#
+# Scale down:
+#   kubectl scale machinedeployment minikube-workers --replicas=2
+
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: minikube-cluster
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 10.244.0.0/16
+    services:
+      cidrBlocks:
+      - 10.96.0.0/12
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    kind: MinikubeCluster
+    name: minikube-cluster
+
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: MinikubeCluster
+metadata:
+  name: minikube-cluster
+  namespace: default
+spec:
+  profileName: minikube
+  driver: docker
+  containerRuntime: containerd
+
+---
+# MachineDeployment for worker nodes
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: minikube-workers
+  namespace: default
+spec:
+  clusterName: minikube-cluster
+
+  # Number of worker nodes to maintain
+  replicas: 3
+
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: minikube-cluster
+      cluster.x-k8s.io/deployment-name: minikube-workers
+
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: minikube-cluster
+        cluster.x-k8s.io/deployment-name: minikube-workers
+        node-role.kubernetes.io/worker: ""
+    spec:
+      clusterName: minikube-cluster
+      version: v1.28.0
+
+      # Infrastructure template reference
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+        kind: MinikubeMachineTemplate
+        name: minikube-worker-template
+
+---
+# MinikubeMachineTemplate defines the template for worker nodes
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: MinikubeMachineTemplate
+metadata:
+  name: minikube-worker-template
+  namespace: default
+spec:
+  template:
+    spec:
+      worker: true
+      controlPlane: false
+      cpus: 2
+      memory: 2048
+      diskSize: 20000
