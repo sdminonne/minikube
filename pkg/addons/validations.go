@@ -32,6 +32,7 @@ import (
 )
 
 const volumesnapshotsAddon = "volumesnapshots"
+const kubevirtAddon = "kubevirt"
 
 // containerdOnlyMsg is the message shown when a containerd-only addon is enabled
 const containerdOnlyAddonMsg = `
@@ -47,6 +48,12 @@ minikube start --container-runtime=containerd --docker-opt containerd=/var/run/c
 const volumesnapshotsDisabledMsg = `[WARNING] For full functionality, the 'csi-hostpath-driver' addon requires the 'volumesnapshots' addon to be enabled.
 
 You can enable 'volumesnapshots' addon by running: 'minikube addons enable volumesnapshots'
+`
+
+// kubevirtDisabledMsg is the message shown when hypershift addon is enabled without the kubevirt addon
+const kubevirtDisabledMsg = `[WARNING] For full functionality, the 'hypershift' addon requires the 'kubevirt' addon to be enabled.
+
+You can enable 'kubevirt' addon by running: 'minikube addons enable kubevirt'
 `
 
 func isRuntimeContainerd(cc *config.ClusterConfig, _, _ string, _ *run.CommandOptions) error {
@@ -73,6 +80,18 @@ func isVolumesnapshotsEnabled(cc *config.ClusterConfig, _, value string, _ *run.
 		// just print out a warning directly, we don't want to return any errors since
 		// that would prevent the addon from being enabled (callbacks wouldn't be run)
 		out.WarningT(volumesnapshotsDisabledMsg)
+	}
+	return nil
+}
+
+// isKubevirtEnabled is a validator that prints out a warning if the kubevirt addon
+// is disabled (does not return any errors!)
+func isKubevirtEnabled(cc *config.ClusterConfig, _, value string, _ *run.CommandOptions) error {
+	isHypershiftEnabled, _ := strconv.ParseBool(value)
+	addonList := viper.GetStringSlice(config.AddonListFlag)
+	isKubevirtEnabled := assets.Addons[kubevirtAddon].IsEnabled(cc) || slices.Contains(addonList, kubevirtAddon)
+	if isHypershiftEnabled && !isKubevirtEnabled {
+		out.WarningT(kubevirtDisabledMsg)
 	}
 	return nil
 }

@@ -42,10 +42,15 @@ func kubectlCommand(ctx context.Context, cc *config.ClusterConfig, files []strin
 	}
 
 	args := []string{fmt.Sprintf("KUBECONFIG=%s", path.Join(vmpath.GuestPersistentDir, "kubeconfig")), kubectlBinary, kubectlAction}
-	if force {
-		args = append(args, "--force")
-	}
-	if !enable {
+	if enable {
+		args = append(args, "--server-side")
+		if force {
+			args = append(args, "--force-conflicts")
+		}
+	} else {
+		if force {
+			args = append(args, "--force")
+		}
 		// --ignore-not-found just ignores when we try to delete a resource that is already gone,
 		// like a completed job with a ttlSecondsAfterFinished
 		args = append(args, "--ignore-not-found")

@@ -36,7 +36,7 @@ func TestKubectlCommand(t *testing.T) {
 			description: "enable an addon",
 			files:       []string{"a", "b"},
 			enable:      true,
-			expected:    "sudo KUBECONFIG=/var/lib/minikube/kubeconfig /var/lib/minikube/binaries/v1.17.0/kubectl apply -f a -f b",
+			expected:    "sudo KUBECONFIG=/var/lib/minikube/kubeconfig /var/lib/minikube/binaries/v1.17.0/kubectl apply --server-side -f a -f b",
 		},
 		{
 			description: "disable an addon",
@@ -49,7 +49,7 @@ func TestKubectlCommand(t *testing.T) {
 			files:       []string{"a", "b"},
 			enable:      true,
 			force:       true,
-			expected:    "sudo KUBECONFIG=/var/lib/minikube/kubeconfig /var/lib/minikube/binaries/v1.17.0/kubectl apply --force -f a -f b",
+			expected:    "sudo KUBECONFIG=/var/lib/minikube/kubeconfig /var/lib/minikube/binaries/v1.17.0/kubectl apply --server-side --force-conflicts -f a -f b",
 		},
 		{
 			description: "disable an addon",

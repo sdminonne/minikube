@@ -39,6 +39,7 @@ var addonPodLabels = map[string]string{
 	"gcp-auth":            "kubernetes.io/minikube-addons=gcp-auth",
 	"csi-hostpath-driver": "kubernetes.io/minikube-addons=csi-hostpath-driver",
 	"traefik":             "app.kubernetes.io/name=traefik",
+	"hypershift":          "name=operator",
 }
 
 // Addons is a list of all addons
@@ -153,6 +154,12 @@ var Addons = []*Addon{
 		name:      "registry",
 		set:       SetBool,
 		callbacks: []setFn{EnableOrDisableAddon, verifyAddonStatus},
+	},
+	{
+		name:        "hypershift",
+		set:         SetBool,
+		validations: []setFn{isKubevirtEnabled},
+		callbacks:   []setFn{EnableOrDisableAddon, verifyAddonStatus},
 	},
 	{
 		name:      "registry-creds",

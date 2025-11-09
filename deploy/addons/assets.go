@@ -47,6 +47,10 @@ var (
 	//go:embed efk/*.tmpl efk/*.yaml
 	EfkAssets embed.FS
 
+	// HypershiftAssets assets for hypershift addon
+	//go:embed hypershift/hypershift_operator.yaml.tmpl hypershift/infrastructures.crd.yaml hypershift/monitoring_coreos_com_podmonitors.yaml hypershift/monitoring_coreos_com_prometheusrules.yaml hypershift/monitoring_coreos_com_servicemonitors.yaml hypershift/routes.crd.yaml
+	HypershiftAssets embed.FS
+
 	// IngressAssets assets for ingress addon
 	//go:embed ingress/*.tmpl
 	IngressAssets embed.FS

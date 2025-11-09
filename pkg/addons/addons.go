@@ -490,8 +490,11 @@ func enableOrDisableAddonInternal(cc *config.ClusterConfig, addon *assets.Addon,
 
 func verifyAddonStatus(cc *config.ClusterConfig, name string, val string, options *run.CommandOptions) error {
 	ns := "kube-system"
-	if name == "ingress" {
+	switch name {
+	case "ingress":
 		ns = "ingress-nginx"
+	case "hypershift":
+		ns = "hypershift"
 	}
 	return verifyAddonStatusInternal(cc, name, val, ns, options)
 }

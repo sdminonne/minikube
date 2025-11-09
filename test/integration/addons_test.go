@@ -150,6 +150,7 @@ func TestAddons(t *testing.T) {
 			{"Olm", validateOlmAddon},
 			{"CSI", validateCSIDriverAndSnapshots},
 			{"Headlamp", validateHeadlampAddon},
+			{"Hypershift", validateHypershiftAddon},
 			{"CloudSpanner", validateCloudSpannerAddon},
 			{"LocalPath", validateLocalPathAddon},
 			{"NvidiaDevicePlugin", validateNvidiaDevicePlugin},
@@ -817,6 +818,20 @@ func validateHeadlampAddon(ctx context.Context, t *testing.T, profile string) {
 
 	if _, err := PodWait(ctx, t, profile, "headlamp", "app.kubernetes.io/name=headlamp", Minutes(8)); err != nil {
 		t.Fatalf("failed waiting for headlamp pod: %v", err)
+	}
+}
+
+func validateHypershiftAddon(ctx context.Context, t *testing.T, profile string) {
+	defer disableAddon(t, "hypershift", profile)
+	defer PostMortemLogs(t, profile)
+
+	rr, err := Run(t, exec.CommandContext(ctx, Target(), "addons", "enable", "hypershift", "-p", profile, "--alsologtostderr", "-v=1"))
+	if err != nil {
+		t.Fatalf("failed to enable hypershift addon: args: %q: %v", rr.Command(), err)
+	}
+
+	if _, err := PodWait(ctx, t, profile, "hypershift", "name=operator", Minutes(8)); err != nil {
+		t.Fatalf("failed waiting for hypershift operator pod: %v", err)
 	}
 }
 
