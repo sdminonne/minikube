@@ -418,7 +418,7 @@ var Addons = map[string]*Addon{
 			"hypershift_operator.yaml",
 			"0640"),
 	}, false, "hypershift", "RedHat", "", "https://minikube.sigs.k8s.io/docs/handbook/addons/hypershift/", map[string]string{
-		"HypershiftOperator":   "hypershift/hypershift-operator:latest@sha256:b62f92ba2b70599d2257392623563a2533543cbd50370063c690a568d0023d46",
+		"HypershiftOperator":   "hypershift/hypershift-operator:latest",
 		"KubevirtCapiProvider": "capk/capk-manager:v0.1.10",
 	}, map[string]string{
 		"HypershiftOperator":   "quay.io",

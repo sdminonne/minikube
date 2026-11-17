@@ -211,6 +211,8 @@ func CreateContainerNode(p CreateParams) error { //nolint to suppress cyclomatic
 	if p.OCIBinary == Podman { // enable execing in /var
 		// podman mounts var/lib with no-exec by default  https://github.com/containers/libpod/issues/5103
 		runArgs = append(runArgs, "--volume", fmt.Sprintf("%s:/var:exec", p.Name))
+		// podman sets a default pids_limit of 2048 in containers.conf, which can be exhausted by nested k8s workloads
+		runArgs = append(runArgs, "--pids-limit=-1")
 
 		if memcgSwap && p.Memory != NoLimit {
 			runArgs = append(runArgs, fmt.Sprintf("--memory-swap=%s", p.Memory))
